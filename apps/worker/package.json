@@ -1,0 +1,23 @@
+{
+  "name": "@books/worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@books/db": "1.0.0",
+    "@books/ingestion": "1.0.0",
+    "@prisma/client": "^6.8.2",
+    "dotenv": "^16.5.0",
+    "googleapis": "^140.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
+

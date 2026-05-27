@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --background: #f7f8fa;
+  --foreground: #17202a;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+.table-cell {
+  @apply px-3 py-2 text-sm border-b border-zinc-200 align-top;
+}
+
+.field {
+  @apply h-10 rounded border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-700;
+}
+
+.btn {
+  @apply inline-flex h-10 items-center justify-center gap-2 rounded bg-teal-700 px-4 text-sm font-medium text-white hover:bg-teal-800 disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply inline-flex h-10 items-center justify-center gap-2 rounded border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-800 hover:bg-zinc-50;
+}
+
