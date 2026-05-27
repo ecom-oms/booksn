@@ -1,0 +1,25 @@
+{
+  "name": "books-inventory-ops",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @books/frontend",
+    "dev:api": "npm run dev -w @books/api",
+    "dev:worker": "npm run dev -w @books/worker",
+    "build": "npm run build -w @books/db && npm run build -w @books/ingestion && npm run build -w @books/api && npm run build -w @books/worker && npm run build -w @books/frontend",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run build -w @books/db && npm run build -w @books/ingestion && npm run typecheck -w @books/api && npm run typecheck -w @books/worker && npm run typecheck -w @books/frontend",
+    "prisma:generate": "npm run prisma:generate -w @books/db",
+    "prisma:migrate": "npm run prisma:migrate -w @books/db",
+    "db:studio": "npm run db:studio -w @books/db"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.24",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

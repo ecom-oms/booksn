@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+model Publisher {
+  id        Int         @id @default(autoincrement())
+  name      String
+  email     String      @unique
+  createdAt DateTime    @default(now()) @map("created_at")
+  uploads   Upload[]
+  inventory Inventory[]
+
+  @@index([email])
+  @@map("publishers")
+}
+
+model Upload {
+  id           Int          @id @default(autoincrement())
+  publisherId  Int          @map("publisher_id")
+  filename     String
+  totalRows    Int          @default(0) @map("total_rows")
+  successRows  Int          @default(0) @map("success_rows")
+  failedRows   Int          @default(0) @map("failed_rows")
+  status       UploadStatus @default(PROCESSING)
+  uploadedAt   DateTime     @default(now()) @map("uploaded_at")
+  errorMessage String?      @db.Text @map("error_message")
+
+  publisher Publisher       @relation(fields: [publisherId], references: [id], onDelete: Cascade)
+  failedRowsLog FailedImportRow[]
+
+  @@index([publisherId])
+  @@index([status])
+  @@index([uploadedAt])
+  @@map("uploads")
+}
+
+model Inventory {
+  id          BigInt   @id @default(autoincrement())
+  isbn        String   @db.VarChar(32)
+  title       String?  @db.VarChar(512)
+  author      String?  @db.VarChar(255)
+  stock       Int      @default(0)
+  price       Decimal? @db.Decimal(10, 2)
+  publisherId Int      @map("publisher_id")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  publisher Publisher @relation(fields: [publisherId], references: [id], onDelete: Cascade)
+
+  @@index([isbn])
+  @@index([title(length: 191)])
+  @@index([publisherId])
+  @@unique([publisherId, isbn])
+  @@map("inventory")
+}
+
+model FailedImportRow {
+  id        BigInt   @id @default(autoincrement())
+  uploadId  Int      @map("upload_id")
+  rowNumber Int      @map("row_number")
+  reason    String   @db.VarChar(512)
+  rawData   Json     @map("raw_data")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  upload Upload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@index([uploadId])
+  @@map("failed_import_rows")
+}
+
+enum UploadStatus {
+  PROCESSING
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+

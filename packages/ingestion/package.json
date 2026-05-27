@@ -1,0 +1,19 @@
+{
+  "name": "@books/ingestion",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@e965/xlsx": "^0.20.3",
+    "csv-parse": "^5.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
