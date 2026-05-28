@@ -1,7 +1,7 @@
 import { Prisma, prisma, UploadStatus } from "@books/db";
 import { parseInventoryFile } from "@books/ingestion";
 export async function importInventoryForPublisher(input) {
-    const publisher = await prisma.publisher.upsert({
+    const sourcePublisher = await prisma.publisher.upsert({
         where: { email: input.publisherEmail },
         create: {
             email: input.publisherEmail,
@@ -13,7 +13,7 @@ export async function importInventoryForPublisher(input) {
     });
     const upload = await prisma.upload.create({
         data: {
-            publisherId: publisher.id,
+            publisherId: sourcePublisher.id,
             filename: input.filename,
             status: UploadStatus.PROCESSING,
         },
@@ -21,20 +21,44 @@ export async function importInventoryForPublisher(input) {
     try {
         const parsed = parseInventoryFile(input.buffer, input.filename);
         const status = parsed.failedRows.length > 0 ? UploadStatus.PARTIAL : UploadStatus.SUCCESS;
+        const publisherGroups = groupRowsByPublisher(parsed.rows, sourcePublisher.name);
+        const publisherRecords = new Map();
+        for (const publisherName of publisherGroups.keys()) {
+            const publisher = await prisma.publisher.upsert({
+                where: { email: publisherEmailFromName(publisherName) },
+                create: { name: publisherName, email: publisherEmailFromName(publisherName) },
+                update: { name: publisherName },
+            });
+            publisherRecords.set(publisherName, publisher);
+        }
         await prisma.$transaction(async (tx) => {
-            await tx.inventory.deleteMany({ where: { publisherId: publisher.id } });
-            for (const chunk of chunkRows(parsed.rows, 1000)) {
-                await tx.inventory.createMany({
-                    data: chunk.map((row) => ({
-                        isbn: row.isbn,
-                        title: row.title,
-                        author: row.author,
-                        stock: row.stock,
-                        price: row.price === undefined ? undefined : new Prisma.Decimal(row.price),
-                        publisherId: publisher.id,
-                    })),
-                    skipDuplicates: true,
-                });
+            await tx.inventory.deleteMany({
+                where: { publisherId: { in: Array.from(publisherRecords.values()).map((publisher) => publisher.id) } },
+            });
+            for (const [publisherName, rows] of publisherGroups) {
+                const publisher = publisherRecords.get(publisherName);
+                if (!publisher)
+                    continue;
+                for (const chunk of chunkRows(rows, 1000)) {
+                    await tx.inventory.createMany({
+                        data: chunk.map((row) => ({
+                            isbn: row.isbn,
+                            title: row.title,
+                            author: row.author,
+                            stock: row.stock,
+                            price: row.price === undefined ? undefined : new Prisma.Decimal(row.price),
+                            currency: row.currency,
+                            bindingType: row.bindingType,
+                            subject: row.subject,
+                            category: row.category,
+                            language: row.language,
+                            publishedYear: row.publishedYear,
+                            productCode: row.productCode,
+                            publisherId: publisher.id,
+                        })),
+                        skipDuplicates: true,
+                    });
+                }
             }
             if (parsed.failedRows.length > 0) {
                 await tx.failedImportRow.createMany({
@@ -78,4 +102,16 @@ function chunkRows(rows, size) {
         chunks.push(rows.slice(index, index + size));
     }
     return chunks;
+}
+function groupRowsByPublisher(rows, fallbackPublisherName) {
+    const groups = new Map();
+    for (const row of rows) {
+        const publisherName = row.publisherName || fallbackPublisherName;
+        groups.set(publisherName, [...(groups.get(publisherName) ?? []), row]);
+    }
+    return groups;
+}
+function publisherEmailFromName(name) {
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "unknown";
+    return `${slug}@publisher.local`;
 }

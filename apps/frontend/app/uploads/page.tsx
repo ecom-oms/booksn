@@ -36,8 +36,8 @@ export default function UploadsPage() {
     <Shell title="Upload Logs">
       <form onSubmit={submit} className="mb-5 rounded border border-zinc-200 bg-white p-4">
         <div className="grid gap-3 lg:grid-cols-[220px_220px_1fr_auto]">
-          <input className="field" placeholder="publisher@example.com" value={publisherEmail} onChange={(event) => setPublisherEmail(event.target.value)} />
-          <input className="field" placeholder="Publisher name" value={publisherName} onChange={(event) => setPublisherName(event.target.value)} />
+          <input className="field" placeholder="Source email optional" value={publisherEmail} onChange={(event) => setPublisherEmail(event.target.value)} />
+          <input className="field" placeholder="Source name optional" value={publisherName} onChange={(event) => setPublisherName(event.target.value)} />
           <input className="field pt-2" type="file" accept=".xlsx,.xls,.csv" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
           <button className="btn" type="submit"><UploadCloud className="h-4 w-4" /> Import</button>
         </div>

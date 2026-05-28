@@ -30,7 +30,7 @@ uploadRouter.get("/failed-rows", async (_req, res) => {
 
 uploadRouter.post("/manual", upload.single("file"), async (req, res) => {
   const schema = z.object({
-    publisherEmail: z.string().email(),
+    publisherEmail: z.string().email().optional(),
     publisherName: z.string().optional(),
   });
   const body = schema.parse(req.body);
@@ -40,8 +40,8 @@ uploadRouter.post("/manual", upload.single("file"), async (req, res) => {
   }
 
   const result = await importInventoryForPublisher({
-    publisherEmail: body.publisherEmail,
-    publisherName: body.publisherName,
+    publisherEmail: body.publisherEmail || "manual-stocklist@publisher.local",
+    publisherName: body.publisherName || "Manual Stock List",
     filename: req.file.originalname,
     buffer: req.file.buffer,
   });

@@ -45,6 +45,9 @@ export function buildInventoryWhere(params: z.infer<typeof searchSchema>) {
           OR: [
             { isbn: { contains: terms[0] } },
             { title: { contains: terms[0] } },
+            { author: { contains: terms[0] } },
+            { productCode: { contains: terms[0] } },
+            { publisher: { name: { contains: terms[0] } } },
           ],
         }
       : {}),
@@ -53,6 +56,9 @@ export function buildInventoryWhere(params: z.infer<typeof searchSchema>) {
           OR: [
             { isbn: { in: terms } },
             ...terms.map((term) => ({ title: { contains: term } })),
+            ...terms.map((term) => ({ author: { contains: term } })),
+            ...terms.map((term) => ({ productCode: { contains: term } })),
+            ...terms.map((term) => ({ publisher: { name: { contains: term } } })),
           ],
         }
       : {}),
