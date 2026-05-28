@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Shell } from "../../components/Shell";
-import { api, getToken } from "../../lib/api";
+import { api } from "../../lib/api";
 
 export default function PublishersPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -15,7 +15,6 @@ export default function PublishersPage() {
   }
 
   useEffect(() => {
-    if (!getToken()) window.location.href = "/login";
     load().catch(() => undefined);
   }, []);
 
@@ -49,4 +48,3 @@ export default function PublishersPage() {
     </Shell>
   );
 }
-

@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Shell } from "../../components/Shell";
-import { api, getToken } from "../../lib/api";
+import { api } from "../../lib/api";
 
 export default function FailedImportsPage() {
   const [items, setItems] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!getToken()) window.location.href = "/login";
     api<{ items: any[] }>("/uploads/failed-rows").then((data) => setItems(data.items)).catch(() => undefined);
   }, []);
 
@@ -35,4 +34,3 @@ export default function FailedImportsPage() {
     </Shell>
   );
 }
-

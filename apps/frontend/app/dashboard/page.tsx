@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Shell } from "../../components/Shell";
-import { api, getToken } from "../../lib/api";
+import { api } from "../../lib/api";
 
 export default function DashboardPage() {
   const [uploads, setUploads] = useState<any[]>([]);
   const [publishers, setPublishers] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!getToken()) window.location.href = "/login";
     api<{ items: any[] }>("/uploads").then((data) => setUploads(data.items)).catch(() => undefined);
     api<{ items: any[] }>("/publishers").then((data) => setPublishers(data.items)).catch(() => undefined);
   }, []);
@@ -54,4 +53,3 @@ function Metric({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-

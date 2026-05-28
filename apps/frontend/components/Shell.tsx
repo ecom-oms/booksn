@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, BookOpen, Download, FileWarning, Home, LogOut, Search, UploadCloud, Users } from "lucide-react";
-import { clearToken } from "../lib/api";
+import { usePathname } from "next/navigation";
+import { BarChart3, BookOpen, Download, FileWarning, Home, Search, UploadCloud, Users } from "lucide-react";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -17,12 +16,6 @@ const nav = [
 
 export function Shell({ children, title }: { children: React.ReactNode; title: string }) {
   const pathname = usePathname();
-  const router = useRouter();
-
-  function logout() {
-    clearToken();
-    router.push("/login");
-  }
 
   return (
     <div className="min-h-screen bg-zinc-100">
@@ -53,14 +46,10 @@ export function Shell({ children, title }: { children: React.ReactNode; title: s
       <main className="lg:pl-64">
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 lg:px-8">
           <h1 className="text-lg font-semibold">{title}</h1>
-          <button className="btn-secondary" onClick={logout} title="Log out">
-            <LogOut className="h-4 w-4" />
-            Logout
-          </button>
+          <div className="text-sm text-zinc-500">Internal inventory console</div>
         </header>
         <div className="p-4 lg:p-8">{children}</div>
       </main>
     </div>
   );
 }
-

@@ -3,13 +3,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@books/db";
 import { isSupportedInventoryFile } from "@books/ingestion";
-import { requireAuth } from "../middleware/auth.js";
 import { importInventoryForPublisher } from "../services/importInventory.js";
 
 export const uploadRouter = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
-
-uploadRouter.use(requireAuth);
 
 uploadRouter.get("/", async (req, res) => {
   const status = z.enum(["PROCESSING", "SUCCESS", "PARTIAL", "FAILED"]).optional().safeParse(req.query.status);
@@ -51,4 +48,3 @@ uploadRouter.post("/manual", upload.single("file"), async (req, res) => {
 
   res.status(201).json({ item: result });
 });
-

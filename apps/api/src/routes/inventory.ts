@@ -1,10 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@books/db";
-import { requireAuth } from "../middleware/auth.js";
 
 export const inventoryRouter = Router();
-inventoryRouter.use(requireAuth);
 
 const searchSchema = z.object({
   q: z.string().optional(),
@@ -68,4 +66,3 @@ export function splitTerms(value?: string) {
     .filter(Boolean)
     .slice(0, 1000);
 }
-

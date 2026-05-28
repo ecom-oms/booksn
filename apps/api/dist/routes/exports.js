@@ -1,10 +1,8 @@
 import ExcelJS from "exceljs";
 import { Router } from "express";
 import { prisma } from "@books/db";
-import { requireAuth } from "../middleware/auth.js";
 import { buildInventoryWhere } from "./inventory.js";
 export const exportRouter = Router();
-exportRouter.use(requireAuth);
 exportRouter.get("/inventory.csv", async (req, res) => {
     const rows = await getExportRows(req.query);
     res.header("Content-Type", "text/csv");

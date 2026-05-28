@@ -1,9 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@books/db";
-import { requireAuth } from "../middleware/auth.js";
 export const publisherRouter = Router();
-publisherRouter.use(requireAuth);
 const publisherSchema = z.object({
     name: z.string().min(1),
     email: z.string().email(),

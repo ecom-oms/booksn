@@ -2,7 +2,7 @@
 
 import { Download, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { api, downloadExport, getToken } from "../lib/api";
+import { api, downloadExport } from "../lib/api";
 import { InventoryTable } from "./InventoryTable";
 
 type Publisher = { id: number; name: string };
@@ -17,7 +17,6 @@ export function SearchPanel({ bulkMode = false }: { bulkMode?: boolean }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!getToken()) window.location.href = "/login";
     api<{ items: Publisher[] }>("/publishers").then((data) => setPublishers(data.items)).catch(() => undefined);
   }, []);
 
