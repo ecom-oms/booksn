@@ -10,6 +10,9 @@ export default function UploadsPage() {
   const [publisherEmail, setPublisherEmail] = useState("");
   const [publisherName, setPublisherName] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [importing, setImporting] = useState(false);
 
   async function load() {
     const data = await api<{ items: any[] }>("/uploads");
@@ -22,14 +25,27 @@ export default function UploadsPage() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!file) return;
+    setMessage("");
+    setError("");
+    if (!file) {
+      setError("Please choose an Excel or CSV file first.");
+      return;
+    }
     const form = new FormData();
     form.set("publisherEmail", publisherEmail);
     form.set("publisherName", publisherName);
     form.set("file", file);
-    await api("/uploads/manual", { method: "POST", body: form });
-    setFile(null);
-    await load();
+    setImporting(true);
+    try {
+      const result = await api<{ item: { successRows: number; failedRows: number; totalRows: number } }>("/uploads/manual", { method: "POST", body: form });
+      setFile(null);
+      setMessage(`Imported ${result.item.successRows} of ${result.item.totalRows} rows. Failed rows: ${result.item.failedRows}.`);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Import failed. Check that the backend API is running and connected.");
+    } finally {
+      setImporting(false);
+    }
   }
 
   return (
@@ -39,8 +55,10 @@ export default function UploadsPage() {
           <input className="field" placeholder="Source email optional" value={publisherEmail} onChange={(event) => setPublisherEmail(event.target.value)} />
           <input className="field" placeholder="Source name optional" value={publisherName} onChange={(event) => setPublisherName(event.target.value)} />
           <input className="field pt-2" type="file" accept=".xlsx,.xls,.csv" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-          <button className="btn" type="submit"><UploadCloud className="h-4 w-4" /> Import</button>
+          <button className="btn" type="submit" disabled={importing}><UploadCloud className="h-4 w-4" /> {importing ? "Importing" : "Import"}</button>
         </div>
+        {message && <p className="mt-3 text-sm text-teal-800">{message}</p>}
+        {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
       </form>
       <div className="overflow-x-auto rounded border border-zinc-200 bg-white">
         <table className="w-full min-w-[820px]">
