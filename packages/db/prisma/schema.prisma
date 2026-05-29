@@ -56,6 +56,13 @@ model Inventory {
   author      String?  @db.VarChar(255)
   stock       Int      @default(0)
   price       Decimal? @db.Decimal(10, 2)
+  currency    String?  @db.VarChar(8)
+  bindingType String?  @db.VarChar(80) @map("binding_type")
+  subject     String?  @db.VarChar(255)
+  category    String?  @db.VarChar(120)
+  language    String?  @db.VarChar(80)
+  publishedYear Int?   @map("published_year")
+  productCode String?  @db.VarChar(80) @map("product_code")
   publisherId Int      @map("publisher_id")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -63,6 +70,8 @@ model Inventory {
 
   @@index([isbn])
   @@index([title(length: 191)])
+  @@index([author])
+  @@index([productCode])
   @@index([publisherId])
   @@unique([publisherId, isbn])
   @@map("inventory")
@@ -88,4 +97,3 @@ enum UploadStatus {
   PARTIAL
   FAILED
 }
-

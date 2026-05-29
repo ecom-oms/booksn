@@ -5,8 +5,16 @@ export type NormalizedInventoryRow = {
   isbn: string;
   title?: string;
   author?: string;
+  publisherName?: string;
   stock: number;
   price?: number;
+  currency?: string;
+  bindingType?: string;
+  subject?: string;
+  category?: string;
+  language?: string;
+  publishedYear?: number;
+  productCode?: string;
 };
 
 export type FailedRow = {
@@ -26,9 +34,17 @@ type CanonicalField = keyof NormalizedInventoryRow;
 const aliases: Record<CanonicalField, string[]> = {
   isbn: ["isbn", "isbn13", "ean", "ean13", "productcode", "bookcode"],
   stock: ["qty", "quantity", "available", "stock", "avlqty"],
-  title: ["bookname", "productname", "title"],
+  title: ["bookname", "productname", "title", "name"],
   price: ["price", "mrp", "rate"],
-  author: ["author", "writer", "contributor"],
+  author: ["author", "author1", "writer", "contributor"],
+  publisherName: ["publisher", "publishername", "publication", "imprint"],
+  currency: ["currency"],
+  bindingType: ["binding", "bindingtype", "format"],
+  subject: ["subject"],
+  category: ["category"],
+  language: ["language"],
+  publishedYear: ["publishedyear", "year", "publicationyear"],
+  productCode: ["productcode", "bookcode", "uacode", "sku", "itemcode"],
 };
 
 const supportedExtensions = new Set([".xlsx", ".xls", ".csv"]);
@@ -126,13 +142,29 @@ function normalizeRow(rawRow: Record<string, unknown>, mapping: Map<CanonicalFie
   const price = parsePrice(readMappedValue(rawRow, mapping, "price"));
   const title = cleanString(readMappedValue(rawRow, mapping, "title"));
   const author = cleanString(readMappedValue(rawRow, mapping, "author"));
+  const publisherName = normalizeName(readMappedValue(rawRow, mapping, "publisherName"));
+  const currency = cleanString(readMappedValue(rawRow, mapping, "currency"))?.toUpperCase();
+  const bindingType = cleanString(readMappedValue(rawRow, mapping, "bindingType"));
+  const subject = cleanString(readMappedValue(rawRow, mapping, "subject"));
+  const category = cleanString(readMappedValue(rawRow, mapping, "category"));
+  const language = cleanString(readMappedValue(rawRow, mapping, "language"))?.toUpperCase();
+  const publishedYear = parseOptionalInteger(readMappedValue(rawRow, mapping, "publishedYear"));
+  const productCode = cleanString(readMappedValue(rawRow, mapping, "productCode"));
 
   return {
     isbn,
     stock,
     ...(title ? { title } : {}),
     ...(author ? { author } : {}),
+    ...(publisherName ? { publisherName } : {}),
     ...(price !== undefined ? { price } : {}),
+    ...(currency ? { currency } : {}),
+    ...(bindingType ? { bindingType } : {}),
+    ...(subject ? { subject } : {}),
+    ...(category ? { category } : {}),
+    ...(language ? { language } : {}),
+    ...(publishedYear !== undefined ? { publishedYear } : {}),
+    ...(productCode ? { productCode } : {}),
   };
 }
 
@@ -162,12 +194,29 @@ function parseInteger(value: unknown, fallback: number) {
   return Math.max(parsed, 0);
 }
 
+function parseOptionalInteger(value: unknown) {
+  const cleaned = cleanString(value)?.replace(/,/g, "");
+  if (!cleaned) return undefined;
+  const parsed = Number.parseInt(cleaned, 10);
+  if (Number.isNaN(parsed)) return undefined;
+  return parsed;
+}
+
 function parsePrice(value: unknown) {
   const cleaned = cleanString(value)?.replace(/[^0-9.]/g, "");
   if (!cleaned) return undefined;
   const parsed = Number.parseFloat(cleaned);
   if (Number.isNaN(parsed)) throw new Error(`Invalid price value: ${cleaned}`);
   return parsed;
+}
+
+function normalizeName(value: unknown) {
+  const cleaned = cleanString(value);
+  if (!cleaned) return undefined;
+  return cleaned
+    .split(" ")
+    .map((part) => part.length <= 2 ? part.toUpperCase() : part[0]?.toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function cleanString(value: unknown) {
